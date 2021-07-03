@@ -4,15 +4,15 @@
 #include <string.h>
 
 /**
- * @brief Checks config sanity
+ * @brief Checks config sanity.
  * 
- * @param config Pointer to user config
- * @return adl_err Error code
+ * @param config Pointer to user config.
+ * @return adl_err Error code.
  */
 static adl_err config_check(adl_config_t* config);
 
 static adl_config_t* cfg = NULL;
-static uint16_t led_count = 0;
+static uint32_t led_count = 0;
 static uint32_t buffer_size = 0;
 
 adl_err adl_init(adl_config_t* config)
@@ -30,7 +30,7 @@ adl_err adl_init(adl_config_t* config)
     return err;
 }
 
-adl_err adl_led_set(uint16_t led_id, adl_rgb_t color)
+adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgba_t color)
 {
     adl_err err = ADL_FAIL;
 
@@ -42,7 +42,7 @@ adl_err adl_led_set(uint16_t led_id, adl_rgb_t color)
     return err;
 }
 
-adl_err adl_fill(adl_rgb_t color)
+adl_err adl_fill(adl_rgba_t color)
 {
     adl_err err = ADL_FAIL;
 
@@ -86,7 +86,7 @@ static adl_err config_check(adl_config_t* config)
 
             if (err == ADL_OK) {
                 led_count = config->width * config->height;
-                buffer_size = led_count * sizeof(adl_rgb_t);
+                buffer_size = led_count * sizeof(adl_rgba_t);
                 memset(config->led_buffer, 0, buffer_size);
             }
         } else {
