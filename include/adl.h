@@ -31,7 +31,7 @@ typedef enum {
  */
 typedef enum {
     ADL_GEOMETRY_STRIP, /**< Leds are in one continous line */
-    ADL_GEOMETRY_RECTANGLE /**< Leds are configured as a rectangular panel */
+    ADL_GEOMETRY_PANEL /**< Leds are configured as a rectangular panel */
 } adl_geometry_e;
 
 /**
@@ -124,9 +124,9 @@ adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgba_t color);
 adl_err adl_fill(adl_rgba_t color);
 
 /**
- * @brief Clears all leds
- * @note Equivalent to settings all led colors to black (0x00000000)
+ * @brief Clears all leds.
+ * @note Equivalent to settings all led colors to black (0x00000000).
  * 
- * @return adl_err Always returns ADL_OK.
+ * @return adl_err Error code.
  */
 adl_err adl_clear();

@@ -4,7 +4,7 @@
 #include <string.h>
 
 /**
- * @brief Checks config sanity.
+ * @brief Checks config sanity. Initializes led buffer.
  * 
  * @param config Pointer to user config.
  * @return adl_err Error code.
@@ -35,7 +35,16 @@ adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgba_t color)
     adl_err err = ADL_FAIL;
 
     if (cfg) {
+        if (x < cfg->width && y < cfg->height) {
+            uint32_t led_index = 0;
 
+            if (cfg->direction == ADL_DIRECTION_ZIGZAG && cfg->geometry == ADL_GEOMETRY_PANEL) {
+                int x_rev = (y % 2) ? cfg->width - x - 1 : x;
+                led_index = y * cfg->width + x_rev;
+            } else {
+                led_index = y * cfg->width + x;
+            }
+        }
     } else {
         err = ADL_ERR_INIT;
     }
@@ -74,9 +83,10 @@ static adl_err config_check(adl_config_t* config)
         if (config->led_buffer) {
             switch (config->geometry) {
             case ADL_GEOMETRY_STRIP:
-                err = ((config->height > 1) || (config->width == 0) || (config->height == 0)) ? ADL_ERR_CONFIG : ADL_OK;
+                config->height = 1;
+                err = (config->width == 0) ? ADL_ERR_CONFIG : ADL_OK;
                 break;
-            case ADL_GEOMETRY_RECTANGLE:
+            case ADL_GEOMETRY_PANEL:
                 err = ((config->height == 0) || (config->width == 0)) ? ADL_ERR_CONFIG : ADL_OK;
                 break;
             default:
