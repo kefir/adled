@@ -44,6 +44,8 @@ adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgba_t color)
             } else {
                 led_index = y * cfg->width + x;
             }
+            cfg->led_buffer[led_index] = color.color;
+            err = ADL_OK;
         }
     } else {
         err = ADL_ERR_INIT;
@@ -56,7 +58,10 @@ adl_err adl_fill(adl_rgba_t color)
     adl_err err = ADL_FAIL;
 
     if (cfg) {
-
+        for (uint32_t i = 0; i < led_count; i++) {
+            cfg->led_buffer[i] = color.color;
+        }
+        err = ADL_OK;
     } else {
         err = ADL_ERR_INIT;
     }
@@ -68,7 +73,8 @@ adl_err adl_clear()
     adl_err err = ADL_FAIL;
 
     if (cfg) {
-
+        memset(cfg->led_buffer, 0, cfg->height * cfg->width * sizeof(adl_rgba_t));
+        err = ADL_OK;
     } else {
         err = ADL_ERR_INIT;
     }

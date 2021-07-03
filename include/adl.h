@@ -10,6 +10,10 @@
  */
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -130,3 +134,7 @@ adl_err adl_fill(adl_rgba_t color);
  * @return adl_err Error code.
  */
 adl_err adl_clear();
+
+#ifdef __cplusplus
+}
+#endif
