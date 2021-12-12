@@ -5,11 +5,14 @@
 
 /**
  * @brief Checks config sanity. Initializes led buffer.
- * 
+ *
  * @param config Pointer to user config.
  * @return adl_err Error code.
  */
 static adl_err config_check(adl_config_t* config);
+
+static float max(float a, float b, float c);
+static float min(float a, float b, float c);
 
 static adl_config_t* cfg = NULL;
 static uint32_t led_count = 0;
@@ -68,6 +71,25 @@ adl_err adl_fill(adl_rgba_t color)
     return err;
 }
 
+adl_err adl_update()
+{
+    adl_err err = ADL_FAIL;
+    if (cfg->spi_driver.write) {
+
+        switch (cfg->led_type) {
+        case ADL_LED_TYPE_APA102:
+            break;
+        case ADL_LED_TYPE_WS2812:
+
+            break;
+        default:
+            break;
+        }
+        cfg->spi_driver.write((uint8_t*)cfg->led_buffer, led_count * sizeof(adl_rgba_t)); // TODO: should be transaction size
+    }
+    return err;
+}
+
 adl_err adl_clear()
 {
     adl_err err = ADL_FAIL;
@@ -79,6 +101,95 @@ adl_err adl_clear()
         err = ADL_ERR_INIT;
     }
     return err;
+}
+
+void adl_hex_to_rgb(const char* hex_color, adl_rgba_t* rgba_color)
+{
+}
+
+void adl_rgb_to_hsv(adl_rgba_t* rgba_color, adl_hsv_t* hsv_color)
+{
+    if (hsv_color && rgba_color) {
+        float rd = (float)rgba_color->r / 255.;
+        float gd = (float)rgba_color->g / 255.;
+        float bd = (float)rgba_color->b / 255.;
+        float max_f = max(rd, gd, bd);
+        float min_f = min(rd, gd, bd);
+        float h = 0.;
+        float s = 0.;
+        float v = max_f;
+
+        double d = max_f - min_f;
+        s = max_f == 0 ? 0 : d / max_f;
+
+        if (max_f == min_f) {
+            h = 0.f; // achromatic
+        } else {
+            if (max_f == rd) {
+                h = (gd - bd) / d + (gd < bd ? 6.f : 0.f);
+            } else if (max_f == gd) {
+                h = (bd - rd) / d + 2.f;
+            } else if (max_f == bd) {
+                h = (rd - gd) / d + 4.f;
+            }
+            h /= 6.f;
+        }
+
+        hsv_color->h = h;
+        hsv_color->s = s;
+        hsv_color->v = v;
+    }
+}
+
+void adl_hsv_to_rgb(adl_hsv_t* hsv_color, adl_rgba_t* rgba_color)
+{
+    if (hsv_color && rgba_color) {
+        float r = 0.f;
+        float g = 0.f;
+        float b = 0.f;
+        int i = (int)(hsv_color->h * 6.f);
+        float f = hsv_color->h * 6.f - i;
+        float p = hsv_color->v * (1.f - hsv_color->s);
+        float q = hsv_color->v * (1.f - f * hsv_color->s);
+        float t = hsv_color->v * (1.f - (1.f - f) * hsv_color->s);
+
+        switch (i % 6) {
+        case 0:
+            r = hsv_color->v;
+            g = t;
+            b = p;
+            break;
+        case 1:
+            r = q;
+            g = hsv_color->v;
+            b = p;
+            break;
+        case 2:
+            r = p;
+            g = hsv_color->v;
+            b = t;
+            break;
+        case 3:
+            r = p;
+            g = q;
+            b = hsv_color->v;
+            break;
+        case 4:
+            r = t;
+            g = p;
+            b = hsv_color->v;
+            break;
+        case 5:
+            r = hsv_color->v;
+            g = p;
+            b = q;
+            break;
+        }
+
+        rgba_color->r = r * 255;
+        rgba_color->g = g * 255;
+        rgba_color->b = b * 255;
+    }
 }
 
 static adl_err config_check(adl_config_t* config)
@@ -111,4 +222,13 @@ static adl_err config_check(adl_config_t* config)
     }
 
     return err;
+}
+
+static float max(float a, float b, float c)
+{
+    return ((a > b) ? (a > c ? a : c) : (b > c ? b : c));
+}
+static float min(float a, float b, float c)
+{
+    return ((a < b) ? (a < c ? a : c) : (b < c ? b : c));
 }
