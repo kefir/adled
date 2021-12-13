@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+static uint8_t DUMMY_BYTE = 0x00;
+
 /**
  * @brief Checks config sanity. Initializes led buffer.
  *
@@ -33,7 +35,7 @@ adl_err adl_init(adl_config_t* config)
     return err;
 }
 
-adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgba_t color)
+adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgb_t color)
 {
     adl_err err = ADL_FAIL;
 
@@ -47,7 +49,7 @@ adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgba_t color)
             } else {
                 led_index = y * cfg->width + x;
             }
-            cfg->led_buffer[led_index] = color.color;
+            cfg->led_buffer[led_index] = (uint32_t)color.color;
             err = ADL_OK;
         }
     } else {
@@ -56,13 +58,13 @@ adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgba_t color)
     return err;
 }
 
-adl_err adl_fill(adl_rgba_t color)
+adl_err adl_fill(adl_rgb_t color)
 {
     adl_err err = ADL_FAIL;
 
     if (cfg) {
         for (uint32_t i = 0; i < led_count; i++) {
-            cfg->led_buffer[i] = color.color;
+            cfg->led_buffer[i] = (uint32_t)color.color;
         }
         err = ADL_OK;
     } else {
@@ -80,12 +82,13 @@ adl_err adl_update()
         case ADL_LED_TYPE_APA102:
             break;
         case ADL_LED_TYPE_WS2812:
-
+            cfg->spi_driver.write(&DUMMY_BYTE, sizeof(uint8_t));
+            cfg->spi_driver.write((uint8_t*)cfg->led_buffer, led_count * sizeof(adl_rgb_t));
+            cfg->spi_driver.write(&DUMMY_BYTE, sizeof(uint8_t));
             break;
         default:
             break;
         }
-        cfg->spi_driver.write((uint8_t*)cfg->led_buffer, led_count * sizeof(adl_rgba_t)); // TODO: should be transaction size
     }
     return err;
 }
@@ -103,16 +106,23 @@ adl_err adl_clear()
     return err;
 }
 
-void adl_hex_to_rgb(const char* hex_color, adl_rgba_t* rgba_color)
+void adl_hex_to_rgb(const char* hex_color, adl_rgb_t* rgb_color)
 {
+    if (hex_color && rgb_color) {
+        if (hex_color[0] == '#') {
+            // sscanf(hex_color, "#%02x%02x%02x", (unsigned int*)&rgb_color->r, (unsigned int*)&rgb_color->g, (unsigned int*)&rgb_color->b);
+        } else {
+            // sscanf(hex_color, "%02x%02x%02x", (unsigned int*)&rgb_color->r, (unsigned int*)&rgb_color->g, (unsigned int*)&rgb_color->b);
+        }
+    }
 }
 
-void adl_rgb_to_hsv(adl_rgba_t* rgba_color, adl_hsv_t* hsv_color)
+void adl_rgb_to_hsv(adl_rgb_t* rgb_color, adl_hsv_t* hsv_color)
 {
-    if (hsv_color && rgba_color) {
-        float rd = (float)rgba_color->r / 255.;
-        float gd = (float)rgba_color->g / 255.;
-        float bd = (float)rgba_color->b / 255.;
+    if (hsv_color && rgb_color) {
+        float rd = (float)rgb_color->r / 255.;
+        float gd = (float)rgb_color->g / 255.;
+        float bd = (float)rgb_color->b / 255.;
         float max_f = max(rd, gd, bd);
         float min_f = min(rd, gd, bd);
         float h = 0.;
@@ -141,9 +151,9 @@ void adl_rgb_to_hsv(adl_rgba_t* rgba_color, adl_hsv_t* hsv_color)
     }
 }
 
-void adl_hsv_to_rgb(adl_hsv_t* hsv_color, adl_rgba_t* rgba_color)
+void adl_hsv_to_rgb(adl_hsv_t* hsv_color, adl_rgba_t* rgb_color)
 {
-    if (hsv_color && rgba_color) {
+    if (hsv_color && rgb_color) {
         float r = 0.f;
         float g = 0.f;
         float b = 0.f;
@@ -186,9 +196,9 @@ void adl_hsv_to_rgb(adl_hsv_t* hsv_color, adl_rgba_t* rgba_color)
             break;
         }
 
-        rgba_color->r = r * 255;
-        rgba_color->g = g * 255;
-        rgba_color->b = b * 255;
+        rgb_color->r = r * 255;
+        rgb_color->g = g * 255;
+        rgb_color->b = b * 255;
     }
 }
 

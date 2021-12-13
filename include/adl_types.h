@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#define ADL_RGB_CHANNELS 3
+
 /**
  * @brief Error codes.
  *
@@ -43,7 +45,7 @@ typedef enum {
 } adl_direction_e;
 
 /**
- * @brief RGBA color definition. Library default.
+ * @brief RGBA color definition.
  * @note Arranged as RGBA with 8 bits per channel.
  */
 typedef union {
@@ -55,6 +57,19 @@ typedef union {
     };
     uint32_t color; /** Direct access color. */
 } adl_rgba_t;
+
+/**
+ * @brief RGB color definition. Library default.
+ * @note Arranged as RGB with 8 bits per channel (RGB888).
+ */
+typedef union {
+    struct {
+        uint32_t r : 8; /** Red channel. */
+        uint32_t g : 8; /** Green channel. */
+        uint32_t b : 8; /** Blue channel. */
+    };
+    uint8_t color[ADL_RGB_CHANNELS]; /** Direct access color. */
+} adl_rgb_t;
 
 /**
  * @brief RGB565 color definition.

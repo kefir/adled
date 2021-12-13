@@ -29,7 +29,7 @@ typedef struct {
     uint32_t* led_buffer; /** Led buffer used for internal operations. Should be height*width*sizeof(uint32_t). Should not be accessed by user. */
     struct {
         void (*write)(uint8_t* buffer, uint32_t len); /** SPI write method. Provided by user. */
-        uint32_t spi_clock_speed; /**SPI clock speed. Critical for WS leds. May be 0 for APA leds */
+        uint32_t spi_clock_speed; /**SPI clock speed in Kbps. Critical for WS leds. May be 0 for APA leds */
     } spi_driver;
 } adl_config_t;
 
@@ -54,7 +54,7 @@ adl_err adl_init(adl_config_t* config);
  * @param color Color.
  * @return adl_err Error code.
  */
-adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgba_t color);
+adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgb_t color);
 
 /**
  * @brief Sets all leds to one color.
@@ -62,7 +62,7 @@ adl_err adl_led_set(uint16_t x, uint16_t y, adl_rgba_t color);
  * @param color Color.
  * @return adl_err Error code.
  */
-adl_err adl_fill(adl_rgba_t color);
+adl_err adl_fill(adl_rgb_t color);
 
 /**
  * @brief Performs LED color via SPI transmission.
@@ -79,8 +79,8 @@ adl_err adl_update();
  * @return adl_err Error code.
  */
 
-void adl_hex_to_rgb(const char* hex_color, adl_rgba_t* rgba_color);
-void adl_rgb_to_hsv(adl_rgba_t* rgba_color, adl_hsv_t* hsv_color);
+void adl_hex_to_rgb(const char* hex_color, adl_rgb_t* rgb_color);
+void adl_rgb_to_hsv(adl_rgb_t* rgb_color, adl_hsv_t* hsv_color);
 void adl_hsv_to_rgb(adl_hsv_t* hsv_color, adl_rgba_t* rgba_color);
 
 adl_err adl_clear();
